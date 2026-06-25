@@ -29,3 +29,31 @@ merged_df["remote_percentage"] = merged_df["remote_percentage"].round(2)
 # if total jobs = 0, I might get division errors
 # Will fix that later
 
+conn = sqlite3.connect("blackout.db")  #connecting to SQLite
+cursor = conn.cursor()
+
+
+# inserting data into DataBase
+for _, row in merged_df.iterrows():
+    cursor.execute("""
+        INSERT OR REPLACE INTO blackout_correlation (
+            log_date,
+            loadshedding_stage,
+            total_job_postings,
+            remote_job_postings,
+            remote_percentage
+        )
+        VALUES (?, ?, ?, ?, ?)
+    """, (
+        row["log_date"],
+        row["loadshedding_stage"],
+        row["total_jobs"],
+        row["remote_jobs"],
+        row["remote_percentage"]
+    ))
+
+# save and closing data 
+conn.commit()
+conn.close()
+
+print("Data ingestion complete. Database updated successfully.")
